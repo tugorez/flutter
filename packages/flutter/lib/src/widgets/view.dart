@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:collection';
-import 'dart:ui' show FlutterView, SemanticsUpdate;
+import 'dart:ui' show FlutterView, SemanticsUpdate, FocusDirection;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -11,6 +11,9 @@ import 'package:flutter/rendering.dart';
 import 'framework.dart';
 import 'lookup_boundary.dart';
 import 'media_query.dart';
+import 'focus_manager.dart';
+import 'focus_scope.dart';
+import 'focus_traversal.dart';
 
 /// Bootstraps a render tree that is rendered into the provided [FlutterView].
 ///
@@ -82,7 +85,40 @@ class View extends StatelessWidget {
   }) : _deprecatedPipelineOwner = deprecatedDoNotUseWillBeRemovedWithoutNoticePipelineOwner,
        _deprecatedRenderView = deprecatedDoNotUseWillBeRemovedWithoutNoticeRenderView,
        assert((deprecatedDoNotUseWillBeRemovedWithoutNoticePipelineOwner == null) == (deprecatedDoNotUseWillBeRemovedWithoutNoticeRenderView == null)),
-       assert(deprecatedDoNotUseWillBeRemovedWithoutNoticeRenderView == null || deprecatedDoNotUseWillBeRemovedWithoutNoticeRenderView.flutterView == view);
+       assert(deprecatedDoNotUseWillBeRemovedWithoutNoticeRenderView == null || deprecatedDoNotUseWillBeRemovedWithoutNoticeRenderView.flutterView == view) {
+          view.onFocusStateChange.listen((focusStateChange) {
+            final isFocused = focusStateChange.currentState.isFocused;
+            final direction = focusStateChange.currentState.direction;
+            if (isFocused) {
+              final traversal = direction == FocusDirection.backwards
+                ? _traverseBackwards
+                : _traverseForward;
+              traversal(focusNode)?.requestFocus();
+            } else {
+              focusNode.unfocus();
+            }
+          });
+       }
+
+  FocusNode? _traverseForward(FocusNode node) {
+    return bfs(node).firstOrNull;
+  }
+
+  FocusNode? _traverseBackwards(FocusNode node) {
+    return bfs(node).lastOrNull;
+  }
+
+  // Finds the focusable nodes.
+  Iterable<FocusNode> bfs(FocusNode node) sync* {
+    final queue = Queue<FocusNode>();
+    queue.add(node);
+    while(!queue.isEmpty) {
+      final node = queue.removeFirst();
+      if (node.canRequestFocus) yield node;
+      queue.addAll(node.children);
+    }
+  }
+
 
   /// The [FlutterView] into which [child] is drawn.
   final FlutterView view;
@@ -95,6 +131,8 @@ class View extends StatelessWidget {
 
   final PipelineOwner? _deprecatedPipelineOwner;
   final RenderView? _deprecatedRenderView;
+
+  FocusNode focusNode = FocusNode();
 
   /// Returns the [FlutterView] that the provided `context` will render into.
   ///
@@ -181,9 +219,13 @@ class View extends StatelessWidget {
           view: view,
           child: _PipelineOwnerScope(
             pipelineOwner: owner,
-            child: MediaQuery.fromView(
-              view: view,
-              child: child,
+            child: Focus(
+              focusNode: focusNode,
+              canRequestFocus: false,
+              child: MediaQuery.fromView(
+                view: view,
+                child: child, 
+              ),
             ),
           ),
         );
