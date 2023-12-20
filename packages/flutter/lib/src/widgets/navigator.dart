@@ -236,7 +236,7 @@ abstract class Route<T> {
   TickerFuture didPush() {
     return TickerFuture.complete()..then<void>((void _) {
       if (navigator?.widget.requestFocus ?? false) {
-        navigator!.focusNode.enclosingScope?.requestFocus();
+        //navigator!.focusNode.enclosingScope?.requestFocus();
       }
     });
   }
@@ -274,7 +274,7 @@ abstract class Route<T> {
         // Since the reference to the navigator will be set to null after it is
         // disposed, we have to do a null-safe operation in case that happens
         // within the same frame when it is added.
-        navigator?.focusNode.enclosingScope?.requestFocus();
+        //navigator?.focusNode.enclosingScope?.requestFocus();
       });
     }
   }

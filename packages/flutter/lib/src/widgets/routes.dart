@@ -873,7 +873,7 @@ class _ModalScopeState<T> extends State<_ModalScope<T>> {
     }
     focusScopeNode.traversalEdgeBehavior = traversalEdgeBehavior;
     if (route.isCurrent && _shouldRequestFocus) {
-      route.navigator!.focusNode.enclosingScope?.setFirstFocus(focusScopeNode);
+      //route.navigator!.focusNode.enclosingScope?.setFirstFocus(focusScopeNode);
     }
   }
 
@@ -903,7 +903,7 @@ class _ModalScopeState<T> extends State<_ModalScope<T>> {
   // and route.offstage.
   void _routeSetState(VoidCallback fn) {
     if (widget.route.isCurrent && !_shouldIgnoreFocusRequest && _shouldRequestFocus) {
-      widget.route.navigator!.focusNode.enclosingScope?.setFirstFocus(focusScopeNode);
+      //widget.route.navigator!.focusNode.enclosingScope?.setFirstFocus(focusScopeNode);
     }
     setState(fn);
   }

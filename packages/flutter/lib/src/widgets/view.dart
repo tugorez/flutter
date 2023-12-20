@@ -11,6 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'framework.dart';
 import 'lookup_boundary.dart';
 import 'media_query.dart';
+import 'foo.dart';
 
 /// Bootstraps a render tree that is rendered into the provided [FlutterView].
 ///
@@ -183,7 +184,7 @@ class View extends StatelessWidget {
             pipelineOwner: owner,
             child: MediaQuery.fromView(
               view: view,
-              child: child,
+              child: FocusableView(view: view, child: child),
             ),
           ),
         );
