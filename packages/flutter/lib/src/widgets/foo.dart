@@ -31,14 +31,14 @@ class _FocusableViewState extends State<FocusableView> {
     final isFocused = focusStateChange.currentState.isFocused;     
     final direction = focusStateChange.currentState.direction;     
     if (isFocused) {                                               
-      _focusNode.requestFocus();
-      /*
+      print('gained it ${widget.view.viewId}');
+      final context = _focusNode.context!;
+      final focusTraversalGroup = FocusTraversalGroup.of(context);
       if (direction == FocusDirection.backwards) {
-        _focusNode.previousFocus();
+        focusTraversalGroup.findLastFocus(_focusNode).previousFocus();
       } else {
-        _focusNode.nextFocus();
+        focusTraversalGroup.findFirstFocus(_focusNode)?.nextFocus();
       }
-      */
     } else {
       print('lost it ${widget.view.viewId}');
       _focusNode.unfocus();                                         
