@@ -193,12 +193,15 @@ class _ViewState extends State<View> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _scopeNode.addListener(_handleFocusChange);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _scopeNode.dispose();
+    _scopeNode
+      ..removeListener(_handleFocusChange)
+      ..dispose();
     super.dispose();
   }
 
@@ -219,7 +222,7 @@ class _ViewState extends State<View> with WidgetsBindingObserver {
           case ViewFocusDirection.undefined:
             nextFocus = _scopeNode;
         }
-        nextFocus.requestFocus();
+        if (!_scopeNode.hasFocus) nextFocus.requestFocus();
       case ViewFocusState.unfocused:
         // Focusing on the root scope node will "park" the focus, so that no
         // descendant node will be given focus, and there's no widget that can
@@ -246,6 +249,23 @@ class _ViewState extends State<View> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  void _handleFocusChange() {
+    //only works for embedded views.
+    if (_scopeNode.hasFocus) {
+      PlatformDispatcher.instance.requestViewFocusChange(
+        viewId: widget.view.viewId, 
+        state: ViewFocusState.focused,
+        direction: ViewFocusDirection.undefined,
+      );
+    } else {
+      PlatformDispatcher.instance.requestViewFocusChange(
+        viewId: widget.view.viewId, 
+        state: ViewFocusState.unfocused,
+        direction: ViewFocusDirection.undefined,
+      );
+    }
   }
 }
 
